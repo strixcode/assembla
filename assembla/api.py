@@ -333,7 +333,7 @@ class Space(AssemblaObject):
 
         if extra_params:
             params.update(extra_params)
-            
+
         return self.api._get_json(
             Milestone,
             space=self,
@@ -399,6 +399,18 @@ class Space(AssemblaObject):
             WikiPage,
             space=self,
             rel_path=self._build_rel_path('wiki_pages'),
+            extra_params=extra_params,
+        )
+
+    @assembla_filter
+    def standup_reports(self, extra_params=None):
+        """"
+        All standup report for today
+        """
+        return self.api._get_json(
+            StandupReport,
+            space=self,
+            rel_path=self._build_rel_path('standup_reports'),
             extra_params=extra_params,
         )
 
@@ -551,6 +563,9 @@ class TicketComment(AssemblaObject):
 
 
 class Tag(AssemblaObject):
+    pass
+
+class StandupReport(AssemblaObject):
     pass
 
 
