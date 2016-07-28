@@ -39,7 +39,8 @@ class API(object):
         """
         return self._get_json(Space, extra_params=extra_params)
 
-    def _get_json(self, model, space=None, rel_path=None, extra_params=None, get_all=None):
+    def _get_json(self, model, space=None, rel_path=None, extra_params=None,
+            get_all=None, get_single=False):
         """
         Base level method for fetching data from the API
         """
@@ -80,8 +81,16 @@ class API(object):
                 self.cache[url] = response
 
         if response.status_code == 200:  # OK
-            results = []
             json_response = response.json()
+
+            if get_single:
+                instance = model(data=json_response)
+                instance.api = self
+                if space:
+                    instance.space = space
+                return instance
+
+            results = []
             for obj in json_response:
                 instance = model(data=obj)
                 instance.api = self
@@ -101,7 +110,7 @@ class API(object):
                 results = results + self._get_json(model, space, rel_path, extra_params, get_all=get_all)
             return results
         elif response.status_code == 204:  # No Content
-            return []
+            return None if get_single else []
         else:  # Most likely a 404 Not Found
             raise Exception(
                 'Code {0} returned from `{1}`. Response text: "{2}".'.format(
@@ -320,12 +329,21 @@ class Space(AssemblaObject):
             get_all=True,  # Retrieve all tickets in the space
         )
 
+    def ticket(self, n):
+        return self.api._get_json(
+            Ticket,
+            space=self,
+            rel_path=self._build_rel_path('tickets/{}'.format(n)),
+            extra_params={},
+            get_single=True,
+        )
+
     @assembla_filter
     def milestones(self, extra_params=None):
         """
         All Milestones in this Space
         """
-        
+
         # Default params
         params = {
             'per_page': settings.MAX_PER_PAGE,
