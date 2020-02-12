@@ -307,6 +307,28 @@ class Space(AssemblaObject):
     rel_path = 'spaces'
 
     @assembla_filter
+    def documents(self, extra_params=None):
+        """
+        All Documents in this Space
+        """
+
+        # Default params
+        params = {
+            'per_page': settings.MAX_PER_PAGE
+        }
+
+        if extra_params:
+            params.update(extra_params)
+
+        return self.api._get_json(
+            Document,
+            space=self,
+            rel_path=self._build_rel_path('documents'),
+            extra_params=params,
+            get_all=True,  # Retrieve all documents in the space
+        )
+
+    @assembla_filter
     def tickets(self, extra_params=None):
         """
         All Tickets in this Space
@@ -450,6 +472,8 @@ class SpaceTool(AssemblaObject):
 class Component(AssemblaObject):
     pass
 
+class Document(AssemblaObject):
+    pass
 
 class Milestone(AssemblaObject):
     @assembla_filter
